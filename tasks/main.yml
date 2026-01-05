@@ -1,0 +1,46 @@
+---
+- name: Download GPG key
+  ansible.builtin.get_url:
+    url: "{{ gpg_key_url }}"
+    dest: "{{ gpg_key_file_armored }}"
+    owner: root
+    group: root
+    mode: '644'
+
+- name: De-Armor GPG key
+  ansible.builtin.shell:
+    cmd: |
+      gpg --dearmor < "{{ gpg_key_file_armored }}" > "{{ gpg_key_file }}"
+  args:
+    creates: "{{ gpg_key_file }}"
+
+- name: Remove armored GPG key
+  ansible.builtin.file:
+    path: "{{ gpg_key_file_armored }}"
+    state: absent
+
+- name: Add the Packer repository to APT sources
+  ansible.builtin.deb822_repository:
+    name: packer
+    types: ["deb"]
+    uris: "{{ base_packer_url }}"
+    suites: "{{ ansible_distribution_release }}"
+    components: main
+    signed_by: "{{ gpg_key_file }}"
+    architectures: amd64
+    enabled: true
+
+- name: Install Packer
+  ansible.builtin.package:
+    name: packer
+    state: present
+    update_cache: true
+
+- name: Add autocompletion for Packer
+  ansible.builtin.command:
+    cmd: packer -autocomplete-install
+  register: packer_autocomplete
+  failed_when: >
+    packer_autocomplete.rc != 0 and
+    'already installed' not in packer_autocomplete.stderr
+  changed_when: packer_autocomplete.rc == 0
