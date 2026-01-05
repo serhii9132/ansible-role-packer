@@ -2,11 +2,14 @@ ansible-packer
 ==============
 
 An Ansible role to install Packer.
+
 Supported platfroms:
+```
 - Debian 12 (Bookworm)
 - Debian 13 (Trixie)
 - Ubuntu 22.04 (Jammy Jellyfish)
 - Ubuntu 24.04 (Noble Numbat)
+```
 
 Requirements
 ------------
