@@ -1,4 +1,10 @@
 ---
+- name: Install prerequisite packages
+  loop: "{{ dependencies }}"
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    update_cache: true
+
 - name: Download GPG key
   ansible.builtin.get_url:
     url: "{{ gpg_key_url }}"
@@ -19,11 +25,11 @@
     path: "{{ gpg_key_file_armored }}"
     state: absent
 
-- name: Add the Packer repository to APT sources
+- name: Add the repository to APT sources
   ansible.builtin.deb822_repository:
     name: packer
     types: ["deb"]
-    uris: "{{ base_packer_url }}"
+    uris: "{{ base_hashicorp_url }}"
     suites: "{{ ansible_distribution_release }}"
     components: main
     signed_by: "{{ gpg_key_file }}"
@@ -31,10 +37,14 @@
     enabled: true
 
 - name: Install Packer
-  ansible.builtin.package:
+  ansible.builtin.apt:
     name: packer
-    state: present
     update_cache: true
+
+- name: Verify the installation
+  ansible.builtin.command:
+    cmd: packer -version
+  changed_when: false
 
 - name: Add autocompletion for Packer
   ansible.builtin.command:
