@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Get Packer version
+      ansible.builtin.command:
+        cmd: packer --version
+      register: packer_version
+      failed_when: packer_version.rc != 0
+      changed_when: false
+
+    - name: Validate version output
+      ansible.builtin.assert:
+        that:
+          - "'v1.' in packer_version.stdout"
+          - "packer_version.stdout_lines | length > 0"
+        fail_msg: "Error"
