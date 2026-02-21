@@ -1,8 +1,7 @@
 ---
 - name: Install prerequisite packages
-  loop: "{{ __packer_dependencies }}"
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name: "{{ __packer_dependencies }}"
     update_cache: true
 
 - name: Add the repository to APT sources
